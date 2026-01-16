@@ -1,0 +1,25 @@
+{
+  "name": "nova-cms",
+  "version": "1.0.0",
+  "description": "This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "concurrently \"npm run dev --prefix backend\" \"npm start --prefix frontend\" "
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/AzmanIstiaq/NovaCMS.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/AzmanIstiaq/NovaCMS/issues"
+  },
+  "homepage": "https://github.com/AzmanIstiaq/NovaCMS#readme",
+  "devDependencies": {
+    "concurrently": "^9.2.1"
+  }
+}
