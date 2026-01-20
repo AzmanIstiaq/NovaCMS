@@ -97,9 +97,9 @@ export const updatePost = async (req, res) => {
       if (req.user.role === "admin") {
         post.status = status;
       } else {
-        return res
-          .status(403)
-          .json({ message: "Forbidden: Only admin can change status" });
+        return res.status(403).json({
+          message: "Forbidden: Only admin & author can change status",
+        });
       }
     }
 
@@ -146,15 +146,39 @@ export const getPublishedPosts = async (req, res) => {
       .limit(limit);
 
     const totalPosts = await Posts.countDocuments({ status: "published" });
+    const totalPages = Math.max(1, Math.ceil(totalPosts / limit));
 
     res.status(200).json({
       page,
-      totalPages: Math.ceil(totalPosts / limit),
+      totalPages,
       totalPosts,
       posts,
     });
   } catch (error) {
     console.error("Error fetching published posts:", error);
+    res.status(500).json({ message: "Server error", error: error.message });
+  }
+};
+
+export const getPostsById = async (req, res) => {
+  try {
+    const posts = await Posts.findById(req.params.id);
+
+    if (!posts) {
+      return res.status(404).json({ message: "Posts not found" });
+    }
+
+    if (
+      posts.author.toString() !== req.user.userId &&
+      req.user.role !== "admin"
+    ) {
+      return res
+        .status(403)
+        .json({ message: "Forbidden: You cannot view this post" });
+    }
+
+    res.json(posts);
+  } catch (error) {
     res.status(500).json({ message: "Server error", error: error.message });
   }
 };
