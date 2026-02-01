@@ -1,70 +1,145 @@
-# Getting Started with Create React App
+# Nova CMS
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A full-stack **Content Management System (CMS)** built with the **MERN stack**, featuring authentication, role-based authorization, post management, and admin controls.
 
-## Available Scripts
+This project demonstrates real-world backend + frontend integration, secure APIs, and role-based workflows.
 
-In the project directory, you can run:
+---
 
-### `npm start`
+## Features
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### Authentication & Authorization
+- JWT-based authentication
+- Secure protected routes
+- Role-based access control:
+  - **Admin** – full access
+  - **Editor** – create & edit own posts
+  - **Viewer** – read-only access
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### Post Management
+- Create, edit, delete posts
+- Draft & published workflow
+- Slug-based public post viewing
+- Secure ID-based editing
+- Pagination for posts
 
-### `npm test`
+### Admin Controls
+- View all users
+- Update user roles
+- Ban / unban users
+- Prevent self-modification
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+### Frontend
+- React with React Router
+- Protected routes
+- Clean dashboard UI
+- Public post viewing
+- Error handling & loading states
 
-### `npm run build`
+---
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## 🛠️ Tech Stack
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+**Frontend**
+- React
+- React Router
+- JavaScript (ES6+)
+- CSS (lightweight theme)
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+**Backend**
+- Node.js
+- Express
+- MongoDB
+- Mongoose
+- JWT (JSON Web Tokens)
+- bcrypt
 
-### `npm run eject`
+---
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+## 🧑‍💻 Roles & Permissions
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+| Role   | Permissions |
+|------|------------|
+| Admin | Full access (users + posts) |
+| Editor | Create & edit own posts |
+| Viewer | Read published posts only |
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+---
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## 📂 Project Structure
+nova-cms/
 
-## Learn More
+├── backend/
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+│ ├── controllers/
 
-To learn React, check out the [React documentation](https://reactjs.org/).
+│ ├── models/
 
-### Code Splitting
+│ ├── routes/
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
+│ ├── middleware/
 
-### Analyzing the Bundle Size
+│ └── server.js
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
+├── frontend/
 
-### Making a Progressive Web App
+│ ├── pages/
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
+│ ├── api.js
 
-### Advanced Configuration
+│ └── App.js
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
+└── README.md
 
-### Deployment
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
+---
 
-### `npm run build` fails to minify
+## ⚙️ Run Locally
 
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+### 1️⃣ Clone the repository
+```bash
+git clone https://github.com/your-username/nova-cms.git
+cd nova-cms
+```
+
+### 
+---
+
+## ⚙️ Run Locally
+
+### 1️⃣ Clone the repository
+```bash
+git clone https://github.com/your-username/nova-cms.git
+cd nova-cms
+```
+
+### 2️⃣ Install dependencies
+```bash
+npm install
+cd backend && npm install
+cd ../frontend && npm install
+```
+
+###  3️⃣ Environment variables
+Create a .env file in backend/:
+```bash
+MONGO_URI=your_mongodb_connection_string
+JWT_SECRET=your_secret_key
+PORT=5000
+```
+
+### 4️⃣ Run the app
+```bash
+npm run dev
+```
+Backend: http://localhost:5000
+Frontend: http://localhost:3000
+
+### SCREENSHOT
+<img width="1919" height="784" alt="image" src="https://github.com/user-attachments/assets/0b4a2a25-f444-4176-bf86-ac333f1a7096" />
+<img width="1919" height="653" alt="image" src="https://github.com/user-attachments/assets/490951c4-ce84-4215-9e3c-f26b29171615" />
+<img width="1919" height="655" alt="image" src="https://github.com/user-attachments/assets/af98c545-0879-4ff9-a0e1-bd22218e2afe" />
+<img width="1919" height="625" alt="image" src="https://github.com/user-attachments/assets/d06bcc05-bf5b-4f2e-8fcd-624f36fbbcfc" />
+
+
+
