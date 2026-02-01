@@ -1,4 +1,5 @@
 import jwt from "jsonwebtoken";
+import { config } from "../config/config.js";
 
 export const protect = (req, res, next) => {
   try {
@@ -13,7 +14,7 @@ export const protect = (req, res, next) => {
     const token = authHeader.split(" ")[1];
 
     //verify token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const decoded = jwt.verify(token, config.jwtSecret);
 
     //attach user to request
     req.user = decoded;
