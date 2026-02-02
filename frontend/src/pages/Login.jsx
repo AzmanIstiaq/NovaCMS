@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { apiFetch } from "../api";
 import { useAuth } from "../auth/AuthContex";
 
 const Login = () => {
@@ -8,7 +7,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
-  const { setUser } = useAuth();
+  const { signIn } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -20,18 +19,7 @@ const Login = () => {
     }
 
     try {
-      const data = await apiFetch("/auth/login", {
-        method: "POST",
-        body: JSON.stringify({ email, password }),
-      });
-
-      // Save token and role to localStorage
-      localStorage.setItem("token", data.token);
-      localStorage.setItem("role", data.user.role);
-
-      // update auth context
-      setUser({ role: data.user.role });
-
+      await signIn(email, password);
       navigate("/dashboard");
     } catch (err) {
       setError(err.message || "Login failed");

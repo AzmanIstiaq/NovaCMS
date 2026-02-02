@@ -13,7 +13,9 @@ const Header = () => {
   const handleLogout = (e) => {
     e.preventDefault();
     signOut();
-    navigate("/", { replace: true });
+    setTimeout(() => {
+      navigate("/", { replace: true });
+    }, 0);
   };
 
   return (

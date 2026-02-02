@@ -1,15 +1,22 @@
 import { API_BASE_URL } from "./config";
 
-export function getToken() {
-  return localStorage.getItem("token");
-}
-
-export function getRole() {
-  return localStorage.getItem("role");
+export async function verifyToken() {
+  const token = localStorage.getItem("token");
+  if (!token) return false;
+  
+  try {
+    const response = await apiFetch("/auth/verify");
+    return !!response.user;
+  } catch (error) {
+    // Token is invalid or expired
+    localStorage.removeItem("token");
+    localStorage.removeItem("role");
+    return false;
+  }
 }
 
 export async function apiFetch(path, options = {}) {
-  const token = getToken();
+  const token = localStorage.getItem("token");
 
   const res = await fetch(`${API_BASE_URL}${path}`, {
     ...options,
@@ -31,9 +38,4 @@ export async function apiFetch(path, options = {}) {
     throw new Error(error);
   }
   return data;
-}
-
-export function logout() {
-  localStorage.removeItem("token");
-  localStorage.removeItem("role");
 }

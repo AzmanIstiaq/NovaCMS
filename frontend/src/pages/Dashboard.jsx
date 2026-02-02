@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { apiFetch, getRole } from "../api";
+import { apiFetch } from "../api";
+import { useAuth } from "../auth/AuthContex";
 import PostCard from "../components/PostCard";
 
 const Dashboard = () => {
   const [posts, setPosts] = useState([]);
   const [error, setError] = useState("");
-
   const navigate = useNavigate();
-  const role = getRole();
+  const { user } = useAuth();
+  const role = user?.role;
 
   const handleDelete = async (id) => {
     if (!window.confirm("Are you sure you want to delete this post?")) return;
