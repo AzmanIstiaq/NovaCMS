@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../api";
 
-const Login = () => {
+const Login = ({ onLoginSuccess }) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -26,6 +26,9 @@ const Login = () => {
       // Save token and role to localStorage
       localStorage.setItem("token", data.token);
       localStorage.setItem("role", data.user.role);
+
+      // Notify parent component of successful login
+      onLoginSuccess?.();
 
       navigate("/");
     } catch (err) {

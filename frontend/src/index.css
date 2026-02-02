@@ -1,8 +1,8 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@500;600;700;800&family=Poppins:wght@400;500;600;700&display=swap');
+
 body {
   margin: 0;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
-    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
-    sans-serif;
+  font-family: var(--font-body);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
@@ -10,4 +10,32 @@ body {
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
+}
+
+:root {
+  --font-body: 'Poppins', 'Montserrat', 'Segoe UI', system-ui, sans-serif;
+  --font-heading: 'Montserrat', 'Poppins', 'Segoe UI', system-ui, sans-serif;
+
+  /* Core palette (dark theme) */
+  --ink-900: #0b1220;       /* page background */
+  --ink-800: #0f172a;       /* card background */
+  --ink-700: #111827;       /* inputs */
+  --ink-850: #0d1526;       /* panels */
+  --ink-880: #090f1c;       /* deep background */
+  --text-primary: #e5e7eb;
+  --text-muted: rgba(229, 231, 235, 0.75);
+
+  /* Accents */
+  --azure-600: #2563eb;     /* primary actions */
+  --amethyst-500: #7c3aed;  /* secondary accents */
+  --goldmist-400: #f5c97a;  /* subtle highlights */
+  --glow-azure: rgba(37, 99, 235, 0.25);
+  --glow-amethyst: rgba(124, 58, 237, 0.22);
+
+  /* Status colors */
+  --draft: #64748b;
+  --review: #7c3aed;
+  --published: #2563eb;
+  --archived: #475569;
+  --error: #dc2626;
 }

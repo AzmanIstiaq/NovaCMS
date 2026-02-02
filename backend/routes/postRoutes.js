@@ -5,6 +5,7 @@ import {
   updatePost,
   deletePost,
   getPublishedPosts,
+  getUserPosts,
   getPostsById,
   submitForReview,
   publishPost,
@@ -18,6 +19,9 @@ const router = express.Router();
 
 // Route to get all published posts (no authentication required)
 router.get("/", getPublishedPosts);
+
+// Route to get all posts for authenticated user (Dashboard)
+router.get("/user", protect, getUserPosts);
 
 // Auth
 router.post("/", protect, createPost); // author, editor, admin

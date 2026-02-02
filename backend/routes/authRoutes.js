@@ -6,8 +6,18 @@ const router = express.Router();
 
 // Registration route
 router.post("/register", registerUser);
-// Login route
-router.post("/login", loginUser);
+
+// Temporary test login route (bypass controller for debugging)
+router.post("/login", (req, res) => {
+  console.log('Direct login route hit:', req.body);
+  try {
+    // Call the actual login function
+    return loginUser(req, res);
+  } catch (error) {
+    console.error('Login error:', error);
+    res.status(500).json({ message: "Login error: " + error.message });
+  }
+});
 
 // Protected route example
 router.get("/me", protect, (req, res) => {

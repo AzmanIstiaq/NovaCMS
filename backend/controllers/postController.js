@@ -4,6 +4,7 @@ import { asyncHandler } from "../middleware/errorMiddleware.js";
 
 export const createPost = asyncHandler(async (req, res) => {
   const { title, content } = req.body;
+  const role = req.user?.role || "viewer";
 
   // Manual payload validation
   if (typeof title !== "string" || title.length < 3) {
@@ -41,7 +42,7 @@ export const createPost = asyncHandler(async (req, res) => {
     title,
     slug,
     content,
-    status:"draft",
+    status: role === "admin" ? "published" : "draft",
     author: req.user._id,
   });
 
@@ -173,6 +174,67 @@ export const getPublishedPosts = asyncHandler(async (req, res) => {
     .limit(limit);
 
   const totalPosts = await Posts.countDocuments({ status: "published" });
+  const totalPages = Math.max(1, Math.ceil(totalPosts / limit));
+
+  res.status(200).json({
+    page,
+    totalPages,
+    totalPosts,
+    posts,
+  });
+});
+
+// Get all posts for authenticated user with pagination
+export const getUserPosts = asyncHandler(async (req, res) => {
+  // Manual query parameter validation
+  const pageParam = req.query.page;
+  const limitParam = req.query.limit;
+  
+  let page = 1;
+  let limit = 10;
+  
+  if (pageParam !== undefined) {
+    if (typeof pageParam !== "string" || !/^\d+$/.test(pageParam)) {
+      return res.status(400).json({ message: "Invalid page: must be a positive integer" });
+    }
+    page = parseInt(pageParam);
+    if (page < 1) {
+      return res.status(400).json({ message: "Invalid page: must be at least 1" });
+    }
+  }
+  
+  if (limitParam !== undefined) {
+    if (typeof limitParam !== "string" || !/^\d+$/.test(limitParam)) {
+      return res.status(400).json({ message: "Invalid limit: must be a positive integer" });
+    }
+    limit = parseInt(limitParam);
+    if (limit < 1 || limit > 100) {
+      return res.status(400).json({ message: "Invalid limit: must be between 1 and 100" });
+    }
+  }
+  
+  const skip = (page - 1) * limit;
+
+  // Build query based on user role
+  let query = {};
+  if (req.user.role === "admin") {
+    // Admin can see all posts
+    query = {};
+  } else if (req.user.role === "editor") {
+    // Editor can see all posts
+    query = {};
+  } else {
+    // Authors can only see their own posts
+    query = { author: req.user._id };
+  }
+
+  const posts = await Posts.find(query)
+    .populate("author", "name")
+    .sort({ createdAt: -1 })
+    .skip(skip)
+    .limit(limit);
+
+  const totalPosts = await Posts.countDocuments(query);
   const totalPages = Math.max(1, Math.ceil(totalPosts / limit));
 
   res.status(200).json({

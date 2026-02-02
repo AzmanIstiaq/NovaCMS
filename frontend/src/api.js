@@ -14,9 +14,9 @@ export async function apiFetch(path, options = {}) {
   const res = await fetch(`${API_BASE_URL}${path}`, {
     ...options,
     headers: {
-      ...(options.headers || {}),
       "Content-Type": "application/json",
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
+      ...(options.headers || {}),
     },
   });
 
@@ -31,4 +31,9 @@ export async function apiFetch(path, options = {}) {
     throw new Error(error);
   }
   return data;
+}
+
+export function logout() {
+  localStorage.removeItem("token");
+  localStorage.removeItem("role");
 }

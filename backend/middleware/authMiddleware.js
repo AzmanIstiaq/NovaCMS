@@ -17,7 +17,11 @@ export const protect = (req, res, next) => {
     const decoded = jwt.verify(token, config.jwtSecret);
 
     //attach user to request
-    req.user = decoded;
+    req.user = {
+      ...decoded,
+      _id: decoded.userId,
+      userId: decoded.userId,
+    };
 
     return next();
   } catch (error) {

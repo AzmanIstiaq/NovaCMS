@@ -1,11 +1,14 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+import { useState, useEffect } from "react";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import CreatePost from "./pages/CreatePost";
 import EditPost from "./pages/EditPost";
 import Users from "./pages/Users";
 import ViewPost from "./pages/ViewPost";
-import { getToken, getRole } from "./api";
+import Header from "./components/Header";
+import Landing from "./pages/Landing";
+import { getToken, getRole, logout } from "./api";
 
 function Protected({ children }) {
   const token = getToken();
@@ -13,23 +16,61 @@ function Protected({ children }) {
 }
 
 function AdminProtected({ children }) {
+  const isAuthenticated = getToken();
   const role = getRole();
-  return role === "admin" ? children : <Navigate to="/" replace />;
+  if (!isAuthenticated) {
+    logout();
+    return <Navigate to="/login" replace />;
+  }
+  
+  return role === "admin" ? children : <Navigate to="/dashboard" replace />;
 }
 
 export default function App() {
+  const [user, setUser] = useState(null);
+
+  useEffect(() => {
+    const token = getToken();
+    const role = getRole();
+    if (token) {
+      setUser({ role });
+    } else {
+      setUser(null);
+    }
+  }, []);
+
+  const handleLogout = () => {
+    logout();
+    setUser(null);
+  };
+  
   return (
     <BrowserRouter>
+      <Header user={user} onLogout={handleLogout}/>
+
       <Routes>
-        <Route path="/login" element={<Login />} />
+        {/* Public routes */}
+        <Route path="/" element={<Landing />} />
+        <Route path="/home" element={<Landing />} />
+        <Route path="/login" element={<Login onLoginSuccess={() => {
+          const token = getToken();
+          const role = getRole();
+          if (token) {
+            setUser({ role });
+          }
+        }} />} />
+        <Route path="/post/:slug" element={<ViewPost />} />
+
+        {/* Protected routes */}
         <Route
-          path="/"
+          path="/dashboard"
           element={
             <Protected>
               <Dashboard />
             </Protected>
           }
         />
+
         <Route
           path="/create-post"
           element={
@@ -38,6 +79,7 @@ export default function App() {
             </Protected>
           }
         />
+
         <Route
           path="/edit-post/:id"
           element={
@@ -46,18 +88,17 @@ export default function App() {
             </Protected>
           }
         />
+
+        {/* Admin routes */}
         <Route
           path="/users"
           element={
-            <Protected>
               <AdminProtected>
                 <Users />
               </AdminProtected>
-            </Protected>
           }
         />
         <Route path="*" element={<Navigate to="/" replace />} />
-        <Route path="/post/:slug" element={<ViewPost />} />
       </Routes>
     </BrowserRouter>
   );
