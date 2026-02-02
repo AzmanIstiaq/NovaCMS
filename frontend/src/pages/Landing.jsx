@@ -6,6 +6,7 @@ import RoleCard from "../components/RoleCard";
 import Workflow from "../components/Workflow";
 import FeatureList from "../components/FeatureList";
 import PillButton from "../components/PillButton";
+import { useAuth } from "../auth/AuthContex";
 import {
   HomeIcon,
   Notification03Icon,
@@ -15,6 +16,9 @@ import {
 } from "@hugeicons/core-free-icons";
 
 const Landing = () => {
+  const { user } = useAuth();
+  const isAuthed = Boolean(user);
+
   return (
     <div className="landing">
       <section className="hero landing-hero">
@@ -40,7 +44,11 @@ const Landing = () => {
             </p>
 
             <div className="hero-actions">
-              <PillButton to="/dashboard">Launch Dashboard</PillButton>
+              {isAuthed ? (
+                <PillButton to="/dashboard">Launch Dashboard</PillButton>
+              ) : (
+                <PillButton to="/login">Get Started</PillButton>
+              )}
               <Button as={Link} to="/post/my-first-post" variant="link" className="text-light">
                 View Public Content
               </Button>

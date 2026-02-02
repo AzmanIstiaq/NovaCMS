@@ -32,8 +32,6 @@ const Dashboard = () => {
     loadPosts();
   }, []);
 
-  console.log("User role:", role);
-
   return (
     <main className="page-shell">
       <section className="hero">

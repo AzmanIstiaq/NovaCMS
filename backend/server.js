@@ -35,24 +35,19 @@ app.use(errorHandler);
 
 // Only start the HTTP server once MongoDB is reachable
 let server = null;
+// start server ONCE
+app.listen(config.port, () => {
+  logger.info(`Server is running on port ${config.port}`);
+});
+
+// connect to DB separately
 const connectDB = async () => {
   try {
     await mongoose.connect(config.mongoUri, {
-      serverSelectionTimeoutMS: 5000, // fail fast when DB is down
+      serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
     });
-
     logger.info("Connected to MongoDB successfully");
-
-    // Test the connection with a simple query (kept for visibility)
-    const User = (await import("./models/User.js")).default;
-    await User.countDocuments(); // connection sanity check
-
-    if (!server) {
-      server = app.listen(config.port, () => {
-        logger.info(`Server is running on port ${config.port}`);
-      });
-    }
   } catch (error) {
     logger.error("MongoDB connection error:", error.message);
     logger.info("Retrying MongoDB connection in 5 seconds...");

@@ -1,12 +1,14 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { apiFetch } from "../api";
+import { useAuth } from "../auth/AuthContex";
 
-const Login = ({ onLoginSuccess }) => {
+const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const navigate = useNavigate();
+  const { setUser } = useAuth();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -27,10 +29,10 @@ const Login = ({ onLoginSuccess }) => {
       localStorage.setItem("token", data.token);
       localStorage.setItem("role", data.user.role);
 
-      // Notify parent component of successful login
-      onLoginSuccess?.();
+      // update auth context
+      setUser({ role: data.user.role });
 
-      navigate("/");
+      navigate("/dashboard");
     } catch (err) {
       setError(err.message || "Login failed");
     }

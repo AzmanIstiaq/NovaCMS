@@ -9,12 +9,11 @@ router.post("/register", registerUser);
 
 // Temporary test login route (bypass controller for debugging)
 router.post("/login", (req, res) => {
-  console.log('Direct login route hit:', req.body);
   try {
     // Call the actual login function
     return loginUser(req, res);
   } catch (error) {
-    console.error('Login error:', error);
+    console.error("Login error:", error);
     res.status(500).json({ message: "Login error: " + error.message });
   }
 });
