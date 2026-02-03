@@ -24,14 +24,14 @@ router.get("/", getPublishedPosts);
 router.get("/user", protect, getUserPosts);
 
 // Auth
-router.post("/", protect, createPost); // author, editor, admin
+router.post("/", protect, requireRole("editor"), createPost); // editor, admin
 router.get("/id/:id", protect, getPostsById); // author, editor, admin
-router.put("/id/:id", protect, updatePost); // author, editor, admin
+router.put("/id/:id", protect, requireRole("editor"), updatePost); // editor, admin
 router.delete("/id/:id", protect, requireRole("admin"), deletePost); // admin
 
 // workflow actions
-router.patch("/id/:id/submit", protect, submitForReview);
-router.patch("/id/:id/publish", protect, requireRole("editor"), publishPost);
+router.patch("/id/:id/submit", protect, requireRole("editor"), submitForReview);
+router.patch("/id/:id/publish", protect, requireRole("admin"), publishPost);
 router.patch("/id/:id/unpublish", protect, requireRole("editor"), unpublishPost);
 router.patch("/id/:id/archive", protect, requireRole("editor"), archivePost);
 router.patch("/id/:id/unarchive", protect, requireRole("editor"), unarchivePost);

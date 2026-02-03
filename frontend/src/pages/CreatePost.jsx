@@ -22,7 +22,7 @@ const CreatePost = () => {
         method: "POST",
         body: JSON.stringify({ title, content, status }),
       });
-      navigate("/");
+      navigate("/dashboard");
     } catch (err) {
       setError(err.message || "Failed to create post");
     }

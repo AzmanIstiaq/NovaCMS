@@ -3,6 +3,7 @@ import { apiFetch, verifyToken } from "../api";
 
 const AuthContext = createContext({
   user: null,
+  loading: true,
   setUser: () => {},
   signIn: () => {},
   signOut: () => {},
@@ -10,24 +11,7 @@ const AuthContext = createContext({
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-
-  useEffect(() => {
-    const checkAuth = async () => {
-      const token = localStorage.getItem("token");
-      const role = localStorage.getItem("role");
-      
-      if (token && role) {
-        const isValid = await verifyToken();
-        if (isValid) {
-          setUser({ role });
-        } else {
-          setUser(null);
-        }
-      }
-    };
-    
-    checkAuth();
-  }, []);
+  const [loading, setLoading] = useState(true);
 
   const signIn = async (email, password) => {
     const data = await apiFetch("/auth/login", {
@@ -48,8 +32,34 @@ export const AuthProvider = ({ children }) => {
     setUser(null);
   };
 
+  useEffect(() => {
+    const bootstrapAuth = async () => {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setLoading(false);
+        return;
+      }
+
+      try {
+        const verifiedUser = await verifyToken();
+        if (verifiedUser) {
+          localStorage.setItem("role", verifiedUser.role || "viewer");
+          setUser({ ...verifiedUser });
+        } else {
+          signOut();
+        }
+      } catch (err) {
+        signOut();
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    bootstrapAuth();
+  }, []);
+
   return (
-    <AuthContext.Provider value={{ user, setUser, signIn, signOut }}>
+    <AuthContext.Provider value={{ user, loading, setUser, signIn, signOut }}>
       {children}
     </AuthContext.Provider>
   );

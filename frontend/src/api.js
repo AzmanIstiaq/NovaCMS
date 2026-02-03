@@ -5,13 +5,18 @@ export async function verifyToken() {
   if (!token) return false;
   
   try {
-    const response = await apiFetch("/auth/verify");
-    return !!response.user;
+    // Use /auth/me to validate the token and fetch user info
+    const response = await apiFetch("/auth/me");
+    return response?.user || null;
   } catch (error) {
-    // Token is invalid or expired
-    localStorage.removeItem("token");
-    localStorage.removeItem("role");
-    return false;
+    // Only clear if it's an auth error, not network error
+    if (error.message?.includes('401') || error.message?.includes('403') || error.message?.includes('Unauthorized')) {
+      localStorage.removeItem("token");
+      localStorage.removeItem("role");
+      return null;
+    }
+    // For network errors, assume token is still valid
+    return null;
   }
 }
 

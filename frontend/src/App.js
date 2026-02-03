@@ -5,28 +5,37 @@ import CreatePost from "./pages/CreatePost";
 import EditPost from "./pages/EditPost";
 import Users from "./pages/Users";
 import ViewPost from "./pages/ViewPost";
+import PublicPosts from "./pages/PublicPosts";
 import Header from "./components/Header";
 import Landing from "./pages/Landing";
+import Register from "./pages/Register";
 import { AuthProvider, useAuth } from "./auth/AuthContex";
 
 function Protected({ children }) {
-  const { user } = useAuth();
+  const { user, loading } = useAuth();
+  
+  if (loading) {
+    return <div>Loading...</div>;
+  }
+  
   return user ? children : <Navigate to="/login" replace />;
 }
 
-function AdminProtected({ children }) {
-  const { user, signOut } = useAuth();
+function AdminProtected({ children, allowedRoles = ["admin", "editor"] }) {
+  const { user, signOut, loading } = useAuth();
+
+  if (loading) {
+    return <div>Loading...</div>;
+  }
 
   if (!user) {
     signOut();
     return <Navigate to="/login" replace />;
   }
 
-  return user.role === "admin" ? (
-    children
-  ) : (
-    <Navigate to="/dashboard" replace />
-  );
+  return allowedRoles.includes(user.role)
+    ? children
+    : <Navigate to="/" replace />;
 }
 
 // App
@@ -40,6 +49,8 @@ function AppRoutes() {
         <Route path="/" element={<Landing />} />
         <Route path="/home" element={<Landing />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/posts" element={<PublicPosts />} />
         <Route path="/post/:slug" element={<ViewPost />} />
 
         {/* Protected routes */}
@@ -47,7 +58,9 @@ function AppRoutes() {
           path="/dashboard"
           element={
             <Protected>
-              <Dashboard />
+              <AdminProtected>
+                <Dashboard />
+              </AdminProtected>
             </Protected>
           }
         />

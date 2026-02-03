@@ -9,7 +9,12 @@ const userSchema = new Schema(
     role: {
       type: String,
       enum: ["admin", "editor", "viewer"],
-      default: "editor",
+      default: "viewer",
+    },
+    status: {
+      type: String,
+      enum: ["active", "banned"],
+      default: "active",
     },
   },
   { timestamps: true }

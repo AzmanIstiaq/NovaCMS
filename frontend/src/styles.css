@@ -72,6 +72,38 @@ button {
   color: #ffffff !important;
 }
 
+.line-clamp-1 {
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.link-underline {
+  position: relative;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.link-underline::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  bottom: -2px;
+  width: 0;
+  height: 2px;
+  background: var(--azure-600);
+  transition: width 0.25s ease;
+}
+
+.link-underline:hover::after {
+  width: 100%;
+}
+
 .navbar {
   background: rgba(10, 15, 28, 0.4) !important;
   backdrop-filter: blur(10px);
@@ -331,7 +363,6 @@ button {
 
 
 .landing-main {
-  padding: 12px 0 64px;
   background: var(--ink-900);
 }
 
@@ -381,10 +412,6 @@ button {
   text-align: center;
 }
 
-.final-cta {
-  margin-top: 10px;
-}
-
 .cta-right {
   display: flex;
   align-items: center;
@@ -413,6 +440,13 @@ button {
     inset 0 1px 0 rgba(255, 255, 255, 0.03);
   overflow: hidden;
   transition: background-color 0.16s ease, box-shadow 0.16s ease, border-color 0.16s ease;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  align-items: stretch;
 }
 
 .info-card {
@@ -491,6 +525,13 @@ button {
 
 .role-card .card-body-text {
   align-items: flex-start;
+}
+
+.role-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 20px;
+  align-items: stretch;
 }
 
 .feature-list {
@@ -653,8 +694,38 @@ button {
 
 .cards-stack {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
+  flex-wrap: wrap;
   gap: 20px;
+  justify-content: flex-start;
+  align-items: stretch;
+  margin-bottom: 30px;
+}
+
+.cards-stack .card-dark {
+  flex: 0 0 calc((100% - 40px) / 3); /* Exactly 3 cards per row accounting for gaps */
+  min-width: 280px;
+  max-width: 350px;
+}
+
+/* Landing page specific cards - 4 per row */
+.landing-main .cards-stack {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+  gap: 20px;
+}
+
+.landing-main .cards-stack .card-dark {
+  width: 100%;
+  min-width: unset;
+  max-width: unset;
+}
+
+/* PublicPosts page specific cards - 4 per row */
+.page-public-posts .cards-stack .card-dark {
+  flex: 0 0 calc((100% - 60px) / 4);
+  min-width: 250px;
+  max-width: 300px;
 }
 
 button {
@@ -685,10 +756,6 @@ button:hover,
   box-shadow: 0 20px 44px rgba(37, 99, 235, 0.46);
 }
 
-.btn-primary.logout-btn {
-  box-shadow: none !important;
-}
-
 .ghost {
   background: transparent;
   color: white;
@@ -705,6 +772,7 @@ button:hover,
   border: 1px solid rgba(255, 255, 255, 0.08) !important;
   color: var(--text-primary);
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+  border-radius: 14px !important;
 }
 
 .card-dark .card-header,
@@ -769,6 +837,77 @@ button:hover,
 .status-review { background: var(--review); }
 .status-published { background: var(--published); }
 .status-archived { background: var(--archived); }
+.status-active { background: #16a34a; }
+.status-banned { background: #dc2626; }
+
+/* Public Posts Page Styles */
+.posts-list {
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+.public-post-item {
+  background: var(--ink-700);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  padding: 24px;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.public-post-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+}
+
+.post-header {
+  margin-bottom: 16px;
+}
+
+.post-title-link {
+  color: var(--text-primary);
+  text-decoration: none;
+  font-size: 1.5rem;
+  font-weight: 600;
+  transition: color 0.2s ease;
+}
+
+.post-title-link:hover {
+  color: var(--azure-400);
+}
+
+.post-meta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 8px;
+}
+
+.post-author {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+}
+
+.post-content {
+  margin-bottom: 16px;
+  color: var(--text-primary);
+  line-height: 1.6;
+}
+
+.post-footer {
+  text-align: right;
+}
+
+.read-more-link {
+  color: var(--azure-400);
+  text-decoration: none;
+  font-weight: 500;
+  transition: color 0.2s ease;
+}
+
+.read-more-link:hover {
+  color: var(--azure-300);
+}
 
 input,
 textarea,
@@ -779,6 +918,11 @@ select {
   border: 1px solid rgba(255, 255, 255, 0.14);
   border-radius: 6px;
   background: var(--ink-700);
+  color: var(--text-primary);
+}
+
+.select-disabled {
+  pointer-events: none;
   color: var(--text-primary);
 }
 
@@ -891,5 +1035,13 @@ textarea {
 
   .arc {
     height: calc(var(--arc-size) * 0.9);
+  }
+}
+
+/* Landing latest posts: single column on small screens */
+@media (max-width: 768px) {
+  .landing-main .cards-stack .card-dark {
+    flex: 1 1 100%;
+    max-width: 100%;
   }
 }

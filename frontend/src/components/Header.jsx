@@ -9,6 +9,9 @@ const Header = () => {
   const { user, signOut } = useAuth();
   const navigate = useNavigate();
   const isAuthed = Boolean(user);
+  const isAdmin = user?.role === "admin";
+  const isEditorOrAdmin = ["editor", "admin"].includes(user?.role);
+  const dashboardLabel = isAdmin ? "Admin Dashboard" : "Dashboard";
 
   const handleLogout = (e) => {
     e.preventDefault();
@@ -52,9 +55,12 @@ const Header = () => {
             <Nav.Link as={Link} to="/" className="text-light">
               Home
             </Nav.Link>
-            {isAuthed && (
+            <Nav.Link as={Link} to="/posts" className="text-light">
+              Posts
+            </Nav.Link>
+            {isAuthed && isEditorOrAdmin && (
               <Nav.Link as={Link} to="/dashboard" className="text-light">
-                Dashboard
+                {dashboardLabel}
               </Nav.Link>
             )}
             {!isAuthed && <PillButton to="/login">Login</PillButton>}

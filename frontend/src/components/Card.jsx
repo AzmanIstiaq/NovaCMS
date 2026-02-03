@@ -8,6 +8,7 @@ const Card = ({
   children,
   className = "",
   onTitleClick,
+  titleClassName = "",
 }) => {
   return (
     <BsCard className={`mb-3 rounded-3 shadow-sm ${className}`}>
@@ -17,7 +18,7 @@ const Card = ({
             {title && (
               <BsCard.Title
                 as="div"
-                className={`fw-semibold mb-1 ${onTitleClick ? "clickable" : ""}`}
+                className={`fw-semibold mb-1 ${onTitleClick ? "clickable" : ""} ${titleClassName}`}
                 onClick={onTitleClick}
               >
                 {title}
