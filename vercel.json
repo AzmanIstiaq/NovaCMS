@@ -4,7 +4,7 @@
     {
       "src": "frontend/package.json",
       "use": "@vercel/static-build",
-      "config": { "distDir": "build" }
+      "config": { "distDir": "frontend/build" }
     },
     {
       "src": "backend/server.js",
@@ -18,7 +18,6 @@
     { "handle": "filesystem" },
     { "src": "/(.*)", "dest": "/index.html" }
   ],
-  "outputDirectory": "frontend/build",
   "installCommand": "npm install --prefix frontend && npm install --prefix backend",
   "env": {
     "NODE_ENV": "production"
