@@ -1,6 +1,7 @@
 {
   "name": "cms-webapp",
   "version": "0.1.0",
+  "homepage": ".",
   "private": true,
   "dependencies": {
     "@hugeicons/core-free-icons": "^1.2.1",
