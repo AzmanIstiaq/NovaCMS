@@ -1,18 +1,24 @@
 {
   "version": 2,
-  "installCommand": "npm install --prefix frontend && npm install --prefix backend",
-  "buildCommand": "npm run build --prefix frontend",
-  "outputDirectory": "frontend/build",
-  "rewrites": [
-    { "source": "/api", "destination": "/api/server.js" },
-    { "source": "/api/(.*)", "destination": "/api/server.js" },
-    { "source": "/(.*)", "destination": "/index.html" }
-  ],
-  "functions": {
-    "api/server.js": {
-      "includeFiles": "backend/**"
+  "builds": [
+    {
+      "src": "frontend/package.json",
+      "use": "@vercel/static-build",
+      "config": { "distDir": "build" }
+    },
+    {
+      "src": "backend/server.js",
+      "use": "@vercel/node",
+      "config": { "includeFiles": "backend/**" }
     }
-  },
+  ],
+  "routes": [
+    { "src": "/api", "dest": "/backend/server.js" },
+    { "src": "/api/(.*)", "dest": "/backend/server.js" },
+    { "handle": "filesystem" },
+    { "src": "/(.*)", "dest": "/index.html" }
+  ],
+  "installCommand": "npm install --prefix frontend && npm install --prefix backend",
   "env": {
     "NODE_ENV": "production"
   }
