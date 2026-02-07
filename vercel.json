@@ -4,7 +4,7 @@
     {
       "src": "frontend/package.json",
       "use": "@vercel/static-build",
-      "config": { "distDir": "build" }
+      "config": { "distDir": "frontend/build" }
     },
     {
       "src": "backend/server.js",
@@ -16,7 +16,7 @@
     { "src": "/api", "dest": "/backend/server.js" },
     { "src": "/api/(.*)", "dest": "/backend/server.js" },
     { "handle": "filesystem" },
-    { "src": "/(.*)", "dest": "/frontend/index.html" }
+    { "src": "/(.*)", "dest": "/index.html" }
   ],
   "installCommand": "npm install --prefix frontend && npm install --prefix backend",
   "env": {
