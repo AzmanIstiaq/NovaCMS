@@ -33,26 +33,38 @@ app.get("/", (req, res) => {
 // Error handling middleware (must be last)
 app.use(errorHandler);
 
-// Only start the HTTP server once MongoDB is reachable
-let server = null;
-// start server ONCE
-app.listen(config.port, () => {
-  logger.info(`Server is running on port ${config.port}`);
-});
-
-// connect to DB separately
+// Track MongoDB connection across invocations (important for serverless)
+let mongoPromise = null;
 const connectDB = async () => {
-  try {
-    await mongoose.connect(config.mongoUri, {
+  // Reuse existing connection when possible
+  if (mongoose.connection.readyState === 1) {
+    return mongoose.connection;
+  }
+  if (!mongoPromise) {
+    mongoPromise = mongoose.connect(config.mongoUri, {
       serverSelectionTimeoutMS: 5000,
       socketTimeoutMS: 45000,
     });
-    logger.info("Connected to MongoDB successfully");
-  } catch (error) {
-    logger.error("MongoDB connection error:", error.message);
-    logger.info("Retrying MongoDB connection in 5 seconds...");
-    setTimeout(connectDB, 5000);
+    mongoPromise
+      .then(() => logger.info("Connected to MongoDB successfully"))
+      .catch((error) => {
+        logger.error("MongoDB connection error:", error.message);
+        // Reset promise so the next request retries
+        mongoPromise = null;
+      });
   }
+  return mongoPromise;
 };
 
+// Kick off DB connection on cold start
 connectDB();
+
+// In Vercel serverless, the platform provides the listener. For local dev, start it here.
+if (process.env.VERCEL !== "1") {
+  app.listen(config.port, () => {
+    logger.info(`Server is running on port ${config.port}`);
+  });
+}
+
+// Export the app for Vercel (@vercel/node accepts an Express handler)
+export default app;

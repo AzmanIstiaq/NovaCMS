@@ -6,10 +6,10 @@ export const config = {
     return process.env.PORT || 5000;
   },
   get jwtSecret() {
-    return process.env.JWT_SECRET || "fallback-secret-key-change-in-production";
+    return process.env.JWT_SECRET;
   },
   get jwtExpiresIn() {
-    return process.env.JWT_EXPIRES_IN || "1d";
+    return process.env.JWT_EXPIRES_IN;
   },
   get nodeEnv() {
     return process.env.NODE_ENV || "development";

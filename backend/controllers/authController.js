@@ -6,6 +6,7 @@ import { asyncHandler } from "../middleware/errorMiddleware.js";
 
 export const registerUser = asyncHandler(async (req, res) => {
   const { name, email, password } = req.body;
+  const normalizedEmail = typeof email === "string" ? email.toLowerCase().trim() : email;
 
   // Manual payload validation
   if (typeof name !== "string" || name.length < 2) {
@@ -16,24 +17,29 @@ export const registerUser = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: "Invalid name: must be less than 50 characters" });
   }
   
-  if (typeof email !== "string" || !email.includes("@")) {
+  if (typeof normalizedEmail !== "string" || !normalizedEmail.includes("@")) {
     return res.status(400).json({ message: "Invalid email: must be a valid email address" });
   }
   
-  if (typeof email !== "string" || email.length > 100) {
+  if (typeof normalizedEmail !== "string" || normalizedEmail.length > 100) {
     return res.status(400).json({ message: "Invalid email: must be less than 100 characters" });
   }
   
-  if (typeof password !== "string" || password.length < 6) {
-    return res.status(400).json({ message: "Invalid password: must be at least 6 characters" });
+  if (typeof password !== "string" || password.length < 8) {
+    return res.status(400).json({ message: "Invalid password: must be at least 8 characters" });
   }
   
   if (typeof password !== "string" || password.length > 100) {
     return res.status(400).json({ message: "Invalid password: must be less than 100 characters" });
   }
 
+  // Basic complexity: require letter and number
+  if (!/[A-Za-z]/.test(password) || !/\d/.test(password)) {
+    return res.status(400).json({ message: "Invalid password: must include letters and numbers" });
+  }
+
   // Check if user already exists
-  const existingUser = await User.findOne({ email });
+  const existingUser = await User.findOne({ email: normalizedEmail });
   if (existingUser) {
     return res.status(400).json({ message: "User already exists" });
   }
@@ -45,7 +51,7 @@ export const registerUser = asyncHandler(async (req, res) => {
   // Create new user
   const newUser = new User({
     name,
-    email,
+    email: normalizedEmail,
     passwordHash,
   });
 
@@ -58,13 +64,14 @@ export const registerUser = asyncHandler(async (req, res) => {
 
 export const loginUser = asyncHandler(async (req, res) => {
   const { email, password } = req.body;
+  const normalizedEmail = typeof email === "string" ? email.toLowerCase().trim() : email;
 
   // Manual payload validation
-  if (typeof email !== "string" || !email.includes("@")) {
+  if (typeof normalizedEmail !== "string" || !normalizedEmail.includes("@")) {
     return res.status(400).json({ message: "Invalid email: must be a valid email address" });
   }
   
-  if (typeof email !== "string" || email.length > 100) {
+  if (typeof normalizedEmail !== "string" || normalizedEmail.length > 100) {
     return res.status(400).json({ message: "Invalid email: must be less than 100 characters" });
   }
   
@@ -77,7 +84,7 @@ export const loginUser = asyncHandler(async (req, res) => {
   }
 
   // Find user by email
-  const user = await User.findOne({ email });
+  const user = await User.findOne({ email: normalizedEmail });
 
   if (!user) {
     return res.status(401).json({ message: "Invalid credentials" });

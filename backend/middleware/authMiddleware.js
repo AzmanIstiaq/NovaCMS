@@ -1,26 +1,39 @@
 import jwt from "jsonwebtoken";
 import { config } from "../config/config.js";
+import User from "../models/User.js";
 
-export const protect = (req, res, next) => {
+export const protect = async (req, res, next) => {
   try {
-    //Read authorization header
+    // Read authorization header
     const authHeader = req.headers.authorization;
 
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
       return res.status(401).json({ message: "No token provided" });
     }
 
-    //extract token
+    // extract token
     const token = authHeader.split(" ")[1];
 
-    //verify token
+    // verify token
     const decoded = jwt.verify(token, config.jwtSecret);
 
-    //attach user to request
+    // hydrate user from DB to catch bans/role changes
+    const user = await User.findById(decoded.userId).select("-passwordHash");
+    if (!user) {
+      return res.status(401).json({ message: "Not authorized, user not found" });
+    }
+    if (user.status === "banned") {
+      return res.status(403).json({ message: "User is banned" });
+    }
+
     req.user = {
       ...decoded,
-      _id: decoded.userId,
-      userId: decoded.userId,
+      _id: user._id,
+      userId: user._id,
+      role: user.role,
+      status: user.status,
+      name: user.name,
+      email: user.email,
     };
 
     return next();
