@@ -8,17 +8,17 @@
     },
     {
       "src": "backend/server.js",
-      "use": "@vercel/node",
-      "config": { "includeFiles": "backend/**" }
+      "use": "@vercel/node"
     }
   ],
   "routes": [
-    { "src": "/api/(.*)", "dest": "/backend/server.js" },
+    { "src": "/api(/.*)?", "dest": "/backend/server.js" },
     { "handle": "filesystem" },
     { "src": "/(.*)", "dest": "/index.html" }
   ],
-  "installCommand": "npm install --prefix backend && npm install --prefix frontend",
+  "installCommand": "npm install --prefix frontend && npm install --prefix backend",
   "env": {
-    "NODE_ENV": "production"
+    "NODE_ENV": "production",
+    "REACT_APP_API_BASE_URL": "/api"
   }
 }
