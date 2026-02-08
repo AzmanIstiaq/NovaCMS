@@ -1,11 +1,11 @@
 {
   "version": 2,
-  "outputDirectory": "frontend/build",
+  "outputDirectory": "build",
   "builds": [
     {
       "src": "frontend/package.json",
       "use": "@vercel/static-build",
-      "config": { "distDir": "frontend/build" }
+      "config": { "distDir": "build" }
     },
     {
       "src": "backend/server.js",
@@ -13,13 +13,14 @@
     }
   ],
   "routes": [
-    { "src": "/api(/.)?", "dest": "/backend/server.js" },
+    { "src": "/api(/.*)?", "dest": "/backend/server.js" },
     { "handle": "filesystem" },
-    { "src": "/(.)", "dest": "/index.html" }
+    { "src": "/(.*)", "dest": "/index.html" }
   ],
   "installCommand": "npm install --prefix frontend && npm install --prefix backend",
   "env": {
     "NODE_ENV": "production",
-    "REACT_APP_API_BASE_URL": "/api"
+    "REACT_APP_API_BASE_URL": "/api",
+    "BUILD_PATH": "../build"
   }
 }
