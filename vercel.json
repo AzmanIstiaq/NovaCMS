@@ -17,6 +17,9 @@
     { "handle": "filesystem" },
     { "src": "/(.*)", "dest": "/index.html" }
   ],
+  "rewrites": [
+    { "source": "/((?!api/).*)", "destination": "/index.html" }
+  ],
   "installCommand": "npm install --prefix frontend && npm install --prefix backend",
   "env": {
     "NODE_ENV": "production",
