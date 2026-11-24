@@ -5,15 +5,17 @@ import { config } from "../config/config.js";
 import { asyncHandler } from "../middleware/errorMiddleware.js";
 
 export const registerUser = asyncHandler(async (req, res) => {
-  const { name, email, password } = req.body;
+  const { name, email, password } = req.body || {};
   const normalizedEmail = typeof email === "string" ? email.toLowerCase().trim() : email;
 
   // Manual payload validation
-  if (typeof name !== "string" || name.length < 2) {
+  const normalizedName = typeof name === "string" ? name.trim() : name;
+
+  if (typeof normalizedName !== "string" || normalizedName.length < 2) {
     return res.status(400).json({ message: "Invalid name: must be at least 2 characters" });
   }
   
-  if (typeof name !== "string" || name.length > 50) {
+  if (normalizedName.length > 50) {
     return res.status(400).json({ message: "Invalid name: must be less than 50 characters" });
   }
   
@@ -29,8 +31,8 @@ export const registerUser = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: "Invalid password: must be at least 8 characters" });
   }
   
-  if (typeof password !== "string" || password.length > 100) {
-    return res.status(400).json({ message: "Invalid password: must be less than 100 characters" });
+  if (Buffer.byteLength(password, "utf8") > 72) {
+    return res.status(400).json({ message: "Invalid password: must be at most 72 bytes" });
   }
 
   // Basic complexity: require letter and number
@@ -50,7 +52,7 @@ export const registerUser = asyncHandler(async (req, res) => {
 
   // Create new user
   const newUser = new User({
-    name,
+    name: normalizedName,
     email: normalizedEmail,
     passwordHash,
   });
@@ -63,7 +65,7 @@ export const registerUser = asyncHandler(async (req, res) => {
 });
 
 export const loginUser = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password } = req.body || {};
   const normalizedEmail = typeof email === "string" ? email.toLowerCase().trim() : email;
 
   // Manual payload validation
@@ -79,12 +81,12 @@ export const loginUser = asyncHandler(async (req, res) => {
     return res.status(400).json({ message: "Invalid password: password is required" });
   }
   
-  if (typeof password !== "string" || password.length > 100) {
-    return res.status(400).json({ message: "Invalid password: must be less than 100 characters" });
+  if (Buffer.byteLength(password, "utf8") > 72) {
+    return res.status(400).json({ message: "Invalid password: must be at most 72 bytes" });
   }
 
   // Find user by email
-  const user = await User.findOne({ email: normalizedEmail });
+  const user = await User.findOne({ email: normalizedEmail }).select("+passwordHash");
 
   if (!user) {
     return res.status(401).json({ message: "Invalid credentials" });

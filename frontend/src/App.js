@@ -22,14 +22,13 @@ function Protected({ children }) {
 }
 
 function AdminProtected({ children, allowedRoles = ["admin", "editor"] }) {
-  const { user, signOut, loading } = useAuth();
+  const { user, loading } = useAuth();
 
   if (loading) {
     return <div>Loading...</div>;
   }
 
   if (!user) {
-    signOut();
     return <Navigate to="/login" replace />;
   }
 
@@ -68,18 +67,18 @@ function AppRoutes() {
         <Route
           path="/create-post"
           element={
-            <Protected>
+            <AdminProtected>
               <CreatePost />
-            </Protected>
+            </AdminProtected>
           }
         />
 
         <Route
           path="/edit-post/:id"
           element={
-            <Protected>
+            <AdminProtected>
               <EditPost />
-            </Protected>
+            </AdminProtected>
           }
         />
 
@@ -87,7 +86,7 @@ function AppRoutes() {
         <Route
           path="/users"
           element={
-            <AdminProtected>
+            <AdminProtected allowedRoles={["admin"]}>
               <Users />
             </AdminProtected>
           }

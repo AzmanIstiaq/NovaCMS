@@ -10,7 +10,7 @@ export async function verifyToken() {
     return response?.user || null;
   } catch (error) {
     // Only clear if it's an auth error, not network error
-    if (error.message?.includes('401') || error.message?.includes('403') || error.message?.includes('Unauthorized')) {
+    if (error.status === 401 || error.status === 403) {
       localStorage.removeItem("token");
       localStorage.removeItem("role");
       return null;
@@ -39,8 +39,9 @@ export async function apiFetch(path, options = {}) {
   }
 
   if (!res.ok) {
-    const error = (data && data.message) || res.statusText;
-    throw new Error(error);
+    const error = new Error((data && data.message) || res.statusText || "Request failed");
+    error.status = res.status;
+    throw error;
   }
   return data;
 }

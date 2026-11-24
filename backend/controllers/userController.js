@@ -1,18 +1,14 @@
 import User from "../models/User.js";
+import { asyncHandler } from "../middleware/errorMiddleware.js";
 
-export const getAllUsers = async (req, res) => {
-  try {
-    const users = await User.find().select("-passwordHash");
-    res.status(200).json(users);
-  } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
-  }
-};
+export const getAllUsers = asyncHandler(async (req, res) => {
+  const users = await User.find().select("-passwordHash");
+  res.status(200).json(users);
+});
 
-export const updateUserRole = async (req, res) => {
-  try {
+export const updateUserRole = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const { role } = req.body;
+    const { role } = req.body || {};
 
     if (!["admin", "editor", "viewer"].includes(role)) {
       return res.status(400).json({ message: "Invalid role" });
@@ -43,15 +39,11 @@ export const updateUserRole = async (req, res) => {
         status: user.status,
       },
     });
-  } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
-  }
-};
+});
 
-export const updateUserStatus = async (req, res) => {
-  try {
+export const updateUserStatus = asyncHandler(async (req, res) => {
     const { id } = req.params;
-    const { status } = req.body;
+    const { status } = req.body || {};
 
     if (!["active", "banned"].includes(status)) {
       return res.status(400).json({ message: "Invalid status" });
@@ -82,7 +74,4 @@ export const updateUserStatus = async (req, res) => {
         status: user.status,
       },
     });
-  } catch (error) {
-    res.status(500).json({ message: "Server error", error: error.message });
-  }
-};
+});

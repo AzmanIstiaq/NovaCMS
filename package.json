@@ -1,11 +1,12 @@
 {
   "name": "nova-cms",
   "version": "1.0.0",
-  "description": "This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).",
+  "description": "Role-based content management and editorial workflow application.",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "concurrently \"npm run dev --prefix backend\" \"npm start --prefix frontend\" "
+    "test": "npm test --prefix backend && npm test --prefix frontend -- --watchAll=false",
+    "build": "npm run build --prefix frontend",
+    "dev": "concurrently \"npm run dev --prefix backend\" \"npm start --prefix frontend\""
   },
   "repository": {
     "type": "git",

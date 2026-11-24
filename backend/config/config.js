@@ -9,9 +9,18 @@ export const config = {
     return process.env.JWT_SECRET;
   },
   get jwtExpiresIn() {
-    return process.env.JWT_EXPIRES_IN;
+    return process.env.JWT_EXPIRES_IN || "1h";
   },
   get nodeEnv() {
     return process.env.NODE_ENV || "development";
+  },
+  get corsOrigin() {
+    return process.env.CORS_ORIGIN || "http://localhost:3000";
+  },
+};
+
+export const validateConfig = () => {
+  if (!config.jwtSecret || config.jwtSecret.length < 32) {
+    throw new Error("JWT_SECRET must be set and contain at least 32 characters");
   }
 };

@@ -31,7 +31,7 @@ const EditPost = () => {
     try {
       await apiFetch(`/posts/id/${id}`, {
         method: "PUT",
-        body: JSON.stringify({ title, content, status }),
+        body: JSON.stringify({ title, content }),
       });
       navigate("/dashboard");
     } catch (err) {
@@ -58,10 +58,7 @@ const EditPost = () => {
           onChange={(e) => setContent(e.target.value)}
           rows={6}
         />
-        <select value={status} onChange={(e) => setStatus(e.target.value)}>
-          <option value="draft">Draft</option>
-          <option value="published">Published</option>
-        </select>
+        <p>Status: <strong>{status}</strong></p>
 
         <button type="submit">Update Post</button>
       </form>
