@@ -19,8 +19,8 @@ const Login = () => {
     }
 
     try {
-      await signIn(email, password);
-      navigate("/dashboard");
+      const data = await signIn(email, password);
+      navigate(["admin", "editor"].includes(data.user.role) ? "/dashboard" : "/posts");
     } catch (err) {
       setError(err.message || "Login failed");
     }

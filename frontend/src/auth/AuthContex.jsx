@@ -21,7 +21,7 @@ export const AuthProvider = ({ children }) => {
 
     localStorage.setItem("token", data.token);
     localStorage.setItem("role", data?.user?.role || "viewer");
-    setUser({ role: data?.user?.role || "viewer" });
+    setUser(data.user);
 
     return data;
   };

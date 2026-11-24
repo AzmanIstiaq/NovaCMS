@@ -1,10 +1,26 @@
 import Posts from "../models/Posts.js";
-import { logger } from "../utils/logger.js";
 import { asyncHandler } from "../middleware/errorMiddleware.js";
+import {
+  canArchivePost,
+  canPublishPost,
+  canReadOrEditPost,
+  canSubmitPost,
+  canUnarchivePost,
+  canUnpublishPost,
+  isPostAuthor,
+} from "../services/postPolicy.js";
+
+const createSlug = (title) =>
+  title
+    .trim()
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, "")
+    .replace(/\s+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
 
 export const createPost = asyncHandler(async (req, res) => {
-  const { title, content, status: requestedStatus } = req.body;
-  const role = req.user?.role || "viewer";
+  const { title, content } = req.body || {};
 
   // Manual payload validation
   if (typeof title !== "string" || title.length < 3) {
@@ -24,10 +40,10 @@ export const createPost = asyncHandler(async (req, res) => {
   }
 
   // Create slug from title
-  const slug = title
-    .toLowerCase()
-    .replace(/[^a-z0-9\s-]/g, "")
-    .replace(/\s+/g, "-");
+  const slug = createSlug(title);
+  if (!slug) {
+    return res.status(400).json({ message: "Invalid title: must contain letters or numbers" });
+  }
 
   // Check for existing slug
   const existingPost = await Posts.findOne({ slug });
@@ -37,26 +53,12 @@ export const createPost = asyncHandler(async (req, res) => {
       .json({ message: "Post with this title already exists" });
   }
 
-  // Determine initial status
-  const allowedStatuses = ["draft", "review", "published"];
-  const cleanedStatus = allowedStatuses.includes(requestedStatus)
-    ? requestedStatus
-    : "draft";
-
-  let status = "draft";
-  if (role === "admin") {
-    status = cleanedStatus; // admin can honor requested status
-  } else if (role === "editor") {
-    // editors start in draft unless they requested publish/review, then move to review
-    status = cleanedStatus === "published" ? "review" : cleanedStatus;
-  }
-
   // Create new post
   const newPost = new Posts({
     title,
     slug,
     content,
-    status,
+    status: "draft",
     author: req.user._id,
   });
 
@@ -88,7 +90,13 @@ export const getPostBySlug = asyncHandler(async (req, res) => {
 // Update a post(author or admin)
 export const updatePost = asyncHandler(async (req, res) => {
   const { id } = req.params;
-  const { title, content, status: requestedStatus } = req.body;
+  const { title, content, status: requestedStatus } = req.body || {};
+
+  if (requestedStatus !== undefined) {
+    return res.status(400).json({
+      message: "Use the workflow actions to change post status",
+    });
+  }
 
   // Manual payload validation
   if (title !== undefined) {
@@ -117,36 +125,26 @@ export const updatePost = asyncHandler(async (req, res) => {
   }
 
   // Check if the user is the author or an admin
-  const isAuthor = post.author.toString() === req.user._id.toString();
-  const isEditorOrAdmin = req.user.role === "editor" || req.user.role === "admin";
-
-  if (!isAuthor && !isEditorOrAdmin) {
+  if (!canReadOrEditPost(req.user, post)) {
     return res.status(403).json({
       message: "Forbidden: You cannot edit this post",
     });
   }
 
   // Update post fields
-  if (title) post.title = title;
-  if (content) post.content = content;
-
-  if (requestedStatus) {
-    const allowedStatuses = ["draft", "review", "published", "archived"];
-    if (!allowedStatuses.includes(requestedStatus)) {
-      return res.status(400).json({ message: "Invalid status value" });
+  if (title) {
+    const nextSlug = createSlug(title);
+    if (!nextSlug) {
+      return res.status(400).json({ message: "Invalid title: must contain letters or numbers" });
     }
-
-    if (req.user.role === "admin") {
-      post.status = requestedStatus;
-    } else if (req.user.role === "editor") {
-      // editors can move between draft/review; published goes to review
-      post.status =
-        requestedStatus === "published" ? "review" : requestedStatus;
-    } else {
-      // authors/viewers cannot change status
-      return res.status(403).json({ message: "Forbidden: You cannot change status" });
+    const slugOwner = await Posts.findOne({ slug: nextSlug, _id: { $ne: post._id } });
+    if (slugOwner) {
+      return res.status(409).json({ message: "Post with this title already exists" });
     }
+    post.title = title;
+    post.slug = nextSlug;
   }
+  if (content) post.content = content;
 
   await post.save();
 
@@ -281,10 +279,7 @@ export const getPostsById = asyncHandler(async (req, res) => {
     return res.status(404).json({ message: "Posts not found" });
   }
 
-  const isAuthor = posts.author.toString() === req.user._id.toString();
-  const isEditorOrAdmin = req.user.role === "editor" || req.user.role === "admin";
-
-  if (!isAuthor && !isEditorOrAdmin) {
+  if (!canReadOrEditPost(req.user, posts)) {
     return res.status(403).json({
       message: "Forbidden: You cannot view this post",
     });
@@ -299,14 +294,12 @@ export const submitForReview = asyncHandler(async (req, res) => {
     return res.status(404).json({ message: "Post not found" });
   }
 
-  const isAuthor = post.author.toString() === req.user._id.toString();
-  if (!isAuthor) {
-    return res.status(403).json({ message: "Only author can submit for review" });
-  }
-
-  if (post.status !== "draft") {
+  if (!canSubmitPost(req.user, post)) {
+    if (req.user.role !== "admin" && !isPostAuthor(req.user, post)) {
+      return res.status(403).json({ message: "Forbidden: cannot submit this post" });
+    }
     return res.status(400).json({
-      message: "Only draft posts can be submitted for review",
+      message: "Only an author or admin can submit a draft for review",
     });
   }
 
@@ -321,11 +314,7 @@ export const publishPost = asyncHandler(async (req, res) => {
   if (!post) {
     return res.status(404).json({ message: "Post not found" });
   }
-  if (req.user.role !== "admin") {
-    return res.status(403).json({ message: "Forbidden: only admins can publish" });
-  }
-
-  if (post.status !== "review") {
+  if (!canPublishPost(req.user, post)) {
     return res.status(400).json({
       message: "Only posts in review can be published",
     });
@@ -342,11 +331,10 @@ export const unpublishPost = asyncHandler(async (req, res) => {
   if (!post) {
     return res.status(404).json({ message: "Post not found" });
   }
-  if (!["admin", "editor"].includes(req.user.role) && post.author.toString() !== req.user._id.toString()) {
-    return res.status(403).json({ message: "Forbidden: cannot unpublish this post" });
-  }
-
-  if (post.status !== "published") {
+  if (!canUnpublishPost(req.user, post)) {
+    if (req.user.role !== "admin") {
+      return res.status(403).json({ message: "Forbidden: only admins can unpublish" });
+    }
     return res.status(400).json({
       message: "Only published posts can be unpublished",
     });
@@ -363,13 +351,12 @@ export const archivePost = asyncHandler(async (req, res) => {
   if (!post) {
     return res.status(404).json({ message: "Post not found" });
   }
-  if (!["admin", "editor"].includes(req.user.role) && post.author.toString() !== req.user._id.toString()) {
-    return res.status(403).json({ message: "Forbidden: cannot archive this post" });
-  }
-
-  if (post.status === "archived") {
+  if (!canArchivePost(req.user, post)) {
+    if (!canReadOrEditPost(req.user, post)) {
+      return res.status(403).json({ message: "Forbidden: cannot archive this post" });
+    }
     return res.status(400).json({
-      message: "Post is already archived",
+      message: "Post cannot be archived from its current state by this user",
     });
   }
 
@@ -384,17 +371,16 @@ export const unarchivePost = asyncHandler(async (req, res) => {
   if (!post) {
     return res.status(404).json({ message: "Post not found" });
   }
-  if (!["admin", "editor"].includes(req.user.role) && post.author.toString() !== req.user._id.toString()) {
-    return res.status(403).json({ message: "Forbidden: cannot unarchive this post" });
-  }
-
-  if (post.status !== "archived") {
+  if (!canUnarchivePost(req.user, post)) {
+    if (!canReadOrEditPost(req.user, post)) {
+      return res.status(403).json({ message: "Forbidden: cannot unarchive this post" });
+    }
     return res.status(400).json({
       message: "Post is not archived",
     });
   }
 
-  post.status = "review";
+  post.status = req.user.role === "admin" ? "review" : "draft";
   await post.save();
 
   res.status(200).json({ message: "Post unarchived successfully" });

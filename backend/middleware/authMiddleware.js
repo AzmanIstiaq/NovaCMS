@@ -12,7 +12,11 @@ export const protect = async (req, res, next) => {
     }
 
     // extract token
-    const token = authHeader.split(" ")[1];
+    const parts = authHeader.trim().split(/\s+/);
+    if (parts.length !== 2 || parts[0] !== "Bearer" || !parts[1]) {
+      return res.status(401).json({ message: "Invalid authorization header" });
+    }
+    const token = parts[1];
 
     // verify token
     const decoded = jwt.verify(token, config.jwtSecret);
@@ -37,7 +41,7 @@ export const protect = async (req, res, next) => {
     };
 
     return next();
-  } catch (error) {
+  } catch {
     return res.status(401).json({ message: "Not authorized, token failed" });
   }
 };

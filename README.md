@@ -1,158 +1,135 @@
-# Nova CMS
+# NovaCMS
 
-Live app: https://nova-cms.vercel.app/
+NovaCMS is a full-stack content management system for small publishing teams that need clear ownership, editorial review, controlled publishing, and basic user administration. It demonstrates authentication, database-backed role enforcement, a draft-to-publish workflow, and a React client consuming a protected Express API.
 
-Nova CMS is a full-stack content platform built on the MERN stack. It delivers authenticated, role-aware authoring; an editorial workflow (draft -> review -> published -> archived); and an admin surface for user governance. The API is JWT-secured, and the frontend ships a protected React dashboard plus public post views.
+- Existing deployment: [nova-cms.vercel.app](https://nova-cms.vercel.app/)
+- Source: [github.com/AzmanIstiaq/NovaCMS](https://github.com/AzmanIstiaq/NovaCMS)
 
----
+The deployment link predates the current security improvements. Revalidate its environment variables, API version, and complete workflow before presenting it as the portfolio demo.
 
-## Features
-- Authentication with JWT, password hashing (bcrypt), and a login rate limiter (20 attempts per 15 minutes per IP).
-- Role-based authorization: Admin, Editor, Viewer. Admins govern users; Editors publish content; Viewers consume published posts.
-- Post lifecycle with status actions: create, edit, submit for review, publish/unpublish, archive/unarchive, delete (admin only).
-- Public delivery: slug-based post pages and a paginated public feed.
-- Admin controls: list users, change roles, ban/unban, with self-protection (cannot change own role/status).
-- Frontend: React 19 + React Router 7 + React Bootstrap; guarded routes, dashboards grouped by status, and landing/public pages.
-- Error handling and logging: centralized middleware with structured console logging; consistent JSON errors.
+## Verified capabilities
 
----
+- Account registration and bcrypt password hashing
+- JWT login with configurable expiry and server-side checks for bans and role changes
+- Three roles: `admin`, `editor`, and `viewer`
+- Editors create and manage only their own drafts; admins can review all content
+- Explicit draft → review → published workflow with archive/restore actions
+- Public, slug-based access to published posts only
+- Admin-only user listing, role updates, and ban/unban controls
+- Pagination and input limits on post listing and content APIs
+- Responsive React interface and production build
 
-## Tech Stack
-- Frontend: React 19, React Router 7, React Bootstrap, Create React App toolchain.
-- Backend: Node.js, Express 5, MongoDB with Mongoose, JWT, bcrypt, CORS.
-- Tooling: concurrently (root dev script), nodemon (backend dev), Vercel serverless adapter (@vercel/node) for the API.
+The API—not the UI—is the security boundary. Protected requests reload the current user from MongoDB, so a ban or role change takes effect without waiting for an existing token to expire.
 
----
+## Architecture
 
-## Project Structure
-```
-nova-cms/
-|-- backend/
-|   |-- server.js
-|   |-- vercel.json
-|   |-- config/config.js
-|   |-- controllers/        # auth, posts, users
-|   |-- routes/             # /auth, /posts, /users
-|   |-- models/             # User, Post
-|   |-- middleware/         # auth + error handlers
-|   `-- utils/logger.js
-|-- frontend/
-|   |-- src/
-|   |   |-- auth/AuthContex.jsx
-|   |   |-- api.js and api/posts.js
-|   |   |-- components/     # UI building blocks
-|   |   |-- pages/          # Landing, Dashboard, Posts, Users, etc.
-|   |   `-- config.js
-|   `-- public/
-`-- README.md
+```text
+React client (frontend/)
+  └─ fetch + Bearer JWT
+Express API (backend/)
+  ├─ authentication and role middleware
+  ├─ post workflow policy and controllers
+  └─ Mongoose models
+MongoDB
 ```
 
----
+| Role | Content access | User administration |
+| --- | --- | --- |
+| Viewer | Read published posts | None |
+| Editor | Create drafts; edit, submit, archive, and restore own unpublished posts | None |
+| Admin | Review all posts; publish, unpublish, archive, restore, and delete | List users, change roles, ban/unban |
 
-## API Overview (root: `/api`)
-**Auth**
-- `POST /auth/register` - create account.
-- `POST /auth/login` - returns JWT + user.
-- `GET /auth/me` - validate token and return user (protected).
-- `GET /auth/admin` - admin check (protected, admin role).
+## API overview
 
-**Posts**
-- `GET /posts` - public published posts, supports `page` and `limit`.
-- `GET /posts/:slug` - public single post by slug.
-- `GET /posts/user` - authenticated user's posts (admin sees all).
-- `GET /posts/id/:id` - author/editor/admin access to a specific post.
-- `POST /posts` - create (roles: editor, admin).
-- `PUT /posts/id/:id` - update (author/editor/admin with rules).
-- `DELETE /posts/id/:id` - delete (admin).
-- `PATCH /posts/id/:id/submit` - author submits draft -> review.
-- `PATCH /posts/id/:id/publish` - admin publishes review -> published.
-- `PATCH /posts/id/:id/unpublish` - admin/editor/author moves published -> review.
-- `PATCH /posts/id/:id/archive` - admin/editor/author archive.
-- `PATCH /posts/id/:id/unarchive` - admin/editor/author archived -> review.
+All API routes are under `/api`.
 
-**Users** (admin only)
-- `GET /users`
-- `PUT /users/:id/role` - change role; cannot change own.
-- `PUT /users/:id/status` - ban/unban; cannot change own.
+| Area | Endpoints |
+| --- | --- |
+| Authentication | `POST /auth/register`, `POST /auth/login`, `GET /auth/me` |
+| Public posts | `GET /posts`, `GET /posts/:slug` |
+| Editorial posts | `GET /posts/user`, `GET/PUT/DELETE /posts/id/:id`, `POST /posts` |
+| Workflow | `PATCH /posts/id/:id/{submit,publish,unpublish,archive,unarchive}` |
+| User administration | `GET /users`, `PUT /users/:id/role`, `PUT /users/:id/status` |
 
----
+The route middleware and workflow policy apply the role and ownership restrictions documented above. General post updates cannot change workflow status.
 
-## Roles and Permissions
-| Role   | Capabilities |
-|--------|--------------|
-| Admin  | All posts, publish/unpublish, archive, delete, manage users, view everything. |
-| Editor | Create/edit own posts, submit for review, archive/unarchive, unpublish own, view dashboard. |
-| Viewer | Read published posts only (public routes). |
+## Local setup
 
----
+Requirements: Node.js 20 or later and MongoDB.
 
-## Post Workflow
-- Statuses: `draft` -> `review` -> `published` -> (`archived` or back to `review` via unpublish/unarchive).
-- Editors start posts as draft; publish requests move to review. Only admins publish.
-- Authors/editors/admins can archive; unarchive returns to review.
-
----
-
-## Environment Variables
-### Backend (`backend/.env`)
-```
-MONGO_URI=mongodb://localhost:27017/nova-cms
-PORT=5000
-JWT_SECRET=your_jwt_secret
-JWT_EXPIRES_IN=1d
-NODE_ENV=development
-```
-
-### Frontend (`frontend/.env`)
-```
-REACT_APP_API_BASE_URL=http://localhost:5000/api
-```
-For production, set `REACT_APP_API_BASE_URL` to your deployed API URL (for example, the Vercel API endpoint).
-
----
-
-## Getting Started
-Prerequisites: Node 18+ (LTS recommended), MongoDB running locally or a remote URI.
-
-1) Install dependencies
-```
+```bash
 npm install
 npm install --prefix backend
 npm install --prefix frontend
 ```
 
-2) Configure environment
-- Create `backend/.env` and `frontend/.env` using the samples above.
+Create `backend/.env` (environment files are ignored by Git):
 
-3) Run in development
+```dotenv
+MONGO_URI=mongodb://localhost:27017/nova-cms
+JWT_SECRET=replace-with-at-least-32-random-characters
+JWT_EXPIRES_IN=1h
+PORT=5000
+CORS_ORIGIN=http://localhost:3000
 ```
+
+Create `frontend/.env.local` when the API is not at the local default:
+
+```dotenv
+REACT_APP_API_BASE_URL=http://localhost:5000/api
+```
+
+Start both applications from the repository root:
+
+```bash
 npm run dev
 ```
-This runs the backend (nodemon) and frontend (CRA) concurrently.
 
-Alternate commands:
-- Backend only: `npm run dev --prefix backend`
-- Frontend only: `npm start --prefix frontend`
+The client is available at `http://localhost:3000`; the API is at `http://localhost:5000`.
 
-4) Build frontend
+New registrations are viewers. The repository intentionally does not contain a default admin password. Promote the first admin directly in a controlled development database before demonstrating administration features.
+
+## Tests and verification
+
+```bash
+npm test
+npm run build
+node --check backend/server.js
+git diff --check
 ```
-npm run build --prefix frontend
+
+The backend tests exercise ownership and workflow policy. Frontend tests verify matching action visibility. A production frontend build also runs Create React App's configured ESLint checks.
+
+The database-backed integration test is gated to prevent accidental use of a configured database. Run it only with an explicitly disposable database:
+
+```powershell
+$env:NOVACMS_INTEGRATION_MONGO_URI='mongodb://127.0.0.1:27018/nova-cms-integration'
+npm test --prefix backend
+Remove-Item Env:NOVACMS_INTEGRATION_MONGO_URI
 ```
----
 
-## Troubleshooting
-- 401 / token errors: ensure the Authorization header is `Bearer <token>` and the frontend `.env` points to the correct API.
-- 429 on login: the in-memory limiter allows about 20 attempts per 15 minutes per IP; wait and retry.
-- Mongo connection failures: verify `MONGO_URI`, network access, and that the cluster accepts your IP.
-- Unexpected 403: confirm your role; some actions require admin (publish, delete, user management).
+## Deployment
 
----
+The backend includes `backend/vercel.json` for a Vercel Node function. Configure `MONGO_URI`, a 32+ character `JWT_SECRET`, `JWT_EXPIRES_IN`, and the exact deployed frontend origin in `CORS_ORIGIN`. Deploy the React application from `frontend/` and set `REACT_APP_API_BASE_URL` to the deployed API URL including `/api`.
 
-### SCREENSHOT
-<img width="1904" height="908" alt="image" src="https://github.com/user-attachments/assets/9d3f1e26-51ba-4a0f-a847-321839bf165a" />
-<img width="1901" height="915" alt="image" src="https://github.com/user-attachments/assets/08f5c2ee-a178-4145-ae62-7cd3b3215d98" />
-<img width="1919" height="908" alt="image" src="https://github.com/user-attachments/assets/8f091c5c-546e-4dee-87a9-333018ad05ef" />
+## Screenshots
 
+These screenshots came from the latest upstream README. Replace them if final integration testing shows that the deployed UI differs from this branch.
 
+![NovaCMS landing page](https://github.com/user-attachments/assets/9d3f1e26-51ba-4a0f-a847-321839bf165a)
+![NovaCMS editorial interface](https://github.com/user-attachments/assets/08f5c2ee-a178-4145-ae62-7cd3b3215d98)
+![NovaCMS content management](https://github.com/user-attachments/assets/8f091c5c-546e-4dee-87a9-333018ad05ef)
 
+See [DEMO_GUIDE.md](DEMO_GUIDE.md) for a reproducible recording plan.
+
+## Known limitations
+
+- No password reset, email verification, refresh tokens, or MFA
+- JWTs are stored in browser local storage; an HttpOnly cookie design would reduce token exposure in a larger production system
+- Login throttling is in-memory and instance-local; production abuse protection should use a shared store or edge/WAF rate limiting
+- No automated browser end-to-end suite
+- No audit log, post revision history, media library, or scheduled publishing
+- Admin bootstrap is a manual database operation
+- Production MongoDB contents and deployed environment configuration are outside repository-only verification
+- The legacy Create React App toolchain retains 30 audit findings (16 high, 5 moderate, 9 low); npm offers no non-breaking complete remediation, so replacing the build tool is deferred
 

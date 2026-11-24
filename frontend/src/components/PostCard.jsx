@@ -90,7 +90,7 @@ const PostCard = ({
       titleClassName="line-clamp-1"
       subtitle={`By: ${authorName}`}
       headerRight={statusBadge}
-      onTitleClick={() => onEdit(post._id)}
+      onTitleClick={canEdit ? () => onEdit(post._id) : undefined}
       footer={footerActions}
     >
       <p className="line-clamp-1">{post.content}</p>

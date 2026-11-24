@@ -3,7 +3,7 @@ const { Schema } = mongoose;
 
 const userSchema = new Schema(
   {
-    name: { type: String, required: true },
+    name: { type: String, required: true, trim: true, minlength: 2, maxlength: 50 },
     email: {
       type: String,
       required: true,
@@ -11,7 +11,7 @@ const userSchema = new Schema(
       lowercase: true,
       trim: true,
     },
-    passwordHash: { type: String, required: true },
+    passwordHash: { type: String, required: true, select: false },
     role: {
       type: String,
       enum: ["admin", "editor", "viewer"],

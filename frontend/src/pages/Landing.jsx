@@ -66,7 +66,7 @@ const Landing = () => {
             </h1>
             <p className="hero-sub">
               Nova CMS is a role-based publishing platform designed for structured workflows,
-              editorial oversight, and SEO-ready delivery.
+              editorial oversight, and controlled public delivery.
             </p>
 
             <div className="hero-actions">
@@ -100,17 +100,17 @@ const Landing = () => {
             />
             <InfoCard
               icon={SearchIcon}
-              title="SEO-Ready Delivery"
-              text="Clean URLs, metadata-friendly structure, and public delivery optimized for search."
+              title="Public Delivery"
+              text="Published content is available through clean, slug-based public URLs."
             />
           </div>
         </Section>
 
         <Section title="Built for teams, not just users" className="section-alt section-panel">
           <div className="role-grid mt-3">
-            <RoleCard icon={UserIcon} title="Author" text="Write and edit drafts, submit content for review." />
-            <RoleCard icon={Notification03Icon} title="Editor" text="Review submissions, publish content, maintain quality." />
-            <RoleCard icon={SunIcon} title="Admin" text="Manage users, permissions, and system governance." />
+            <RoleCard icon={UserIcon} title="Viewer" text="Browse published content through the public experience." />
+            <RoleCard icon={Notification03Icon} title="Editor" text="Create and manage owned drafts, then submit them for review." />
+            <RoleCard icon={SunIcon} title="Admin" text="Approve publishing and manage users, roles, and account status." />
           </div>
         </Section>
 
@@ -128,8 +128,8 @@ const Landing = () => {
                   "Editorial moderation",
                   "Public content delivery",
                   "Clean API-driven architecture",
-                  "SEO-friendly metadata model",
-                  "Auditable publishing trail",
+                  "Slug-based public posts",
+                  "Explicit workflow transitions",
                   "Granular permissions",
                 ]}
               />
